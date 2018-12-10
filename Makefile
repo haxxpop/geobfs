@@ -13,4 +13,9 @@ geobfs-server: $(SERVER_FILES) $(COMMON_FILES)
 clean:
 	rm geobfs-client geobfs-server
 
-.PHONY: all clean
+check:
+	go test
+	cd client && go test
+	cd server && go test
+
+.PHONY: all clean check
