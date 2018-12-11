@@ -6,6 +6,7 @@ import (
   "net"
   "os"
   "strconv"
+  "sync"
   geobfs ".."
 )
 
@@ -42,6 +43,17 @@ func main() {
     }
   }
 
-  // Wire the connection stream to the output stream.
-  geobfs.Deobfuscate(output, conn)
+  var wg sync.WaitGroup
+  wg.Add(2)
+  go func () {
+    defer wg.Done()
+    // Wire the connection stream to the output stream.
+    geobfs.Deobfuscate(output, conn)
+  }()
+  go func () {
+    defer wg.Done()
+    // Wire the input stream to the connection stream.
+    geobfs.Obfuscate(conn, os.Stdin)
+  }()
+  wg.Wait()
 }
