@@ -2,6 +2,7 @@ package geobfs
 
 import (
   "errors"
+  "strings"
   "testing"
 )
 
@@ -73,5 +74,38 @@ func TestObfuscateAndDeobfuscateLine(t *testing.T) {
       t.Errorf("deobfuscateLine(%q) == %q, %q (want 0, <error>)", c,
                got_byte, got_err)
     }
+  }
+}
+
+func TestObfuscateAndDeobfuscate(t *testing.T) {
+  // Test round-trip Obfuscate and Deobfuscate.
+  input := "abc\ndef\nhi"
+  var obfuscated strings.Builder
+  var dst1 strings.Builder
+
+  Obfuscate(&obfuscated, strings.NewReader(input))
+  Deobfuscate(&dst1, strings.NewReader(obfuscated.String()))
+  if dst1.String() != input {
+    t.Errorf("Round-trip Obfuscate and Deobfuscate == %q, (want %q)",
+             dst1.String(), input)
+  }
+
+  // Test Deobfuscate.
+  expected := "test\ntest\n"
+  input = "geo:-8.168906,-105.136135\n" +
+          "geo:-18.399656,-168.117797\n" +
+          "geo:-8.932781,30.370982\n" +
+          "geo:-8.359031,158.467802\n" +
+          "geo:-82.877906,-16.507850\n" +
+          "geo:-8.412539,15.185138\n" +
+          "geo:-18.546469,-18.189860\n" +
+          "geo:-8.836313,-23.855515\n" +
+          "geo:-7.760813,-0.526205\n" +
+          "geo:-82.711477,158.904065\n"
+  var dst2 strings.Builder
+  Deobfuscate(&dst2, strings.NewReader(input))
+  if dst2.String() != expected {
+    t.Errorf("Deobfuscate == %q, (want %q)",
+             dst2.String(), expected)
   }
 }
