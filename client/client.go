@@ -5,6 +5,7 @@ import (
   "fmt"
   "os"
   "strconv"
+  "sync"
   geobfs ".."
 )
 
@@ -30,8 +31,19 @@ func main() {
     // We need to use Go routine so that we can handle multiple connections
     // simultaneously.
     go func() {
-      // Wire the server connection to the client connection.
-      geobfs.Obfuscate(conn.serverConn, conn.clientConn)
+      var wg sync.WaitGroup
+      wg.Add(2)
+      go func () {
+        defer wg.Done()
+        // Wire the client connection to the server connection.
+        geobfs.Obfuscate(conn.serverConn, conn.clientConn)
+      }()
+      go func () {
+        defer wg.Done()
+        // Wire the server connection to the client connection.
+        geobfs.Deobfuscate(conn.clientConn, conn.serverConn)
+      }()
+      wg.Wait()
       conn.Close()
     }()
   }
